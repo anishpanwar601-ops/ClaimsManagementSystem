@@ -1,0 +1,235 @@
+@model IEnumerable<ClaimViewModel>
+@{
+    ViewData["Title"] = "Claims Review Board";
+}
+
+<div class="row animate-fade-in">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1 text-gradient-purple">Claims Review Board</h2>
+                <p class="text-secondary mb-0">Assess submitted claims, search by account numbers, and process approvals or rejections</p>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="glass-panel p-4 mb-4">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label form-label-custom">Search Loan Account</label>
+                    <input type="text" name="searchAccount" class="form-control form-control-custom" value="@ViewBag.SearchAccount" placeholder="Enter Account number..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-custom">Filter by Status</label>
+                    <select name="statusFilter" class="form-select form-control-custom">
+                        <option value="">All Statuses</option>
+                        <option value="1" selected="@(ViewBag.StatusFilter == 1)">Pending</option>
+                        <option value="2" selected="@(ViewBag.StatusFilter == 2)">Approved</option>
+                        <option value="3" selected="@(ViewBag.StatusFilter == 3)">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-custom">Filter by Claim Type</label>
+                    <select name="typeFilter" class="form-select form-control-custom">
+                        <option value="">All Types</option>
+                        <option value="Insurance Claim" selected="@(ViewBag.TypeFilter == "Insurance Claim")">Insurance Claim</option>
+                        <option value="Interest Waiver Request" selected="@(ViewBag.TypeFilter == "Interest Waiver Request")">Interest Waiver Request</option>
+                        <option value="Dispute Charge" selected="@(ViewBag.TypeFilter == "Dispute Charge")">Dispute Charge</option>
+                        <option value="Credit Limit Dispute" selected="@(ViewBag.TypeFilter == "Credit Limit Dispute")">Credit Limit Dispute</option>
+                        <option value="Other" selected="@(ViewBag.TypeFilter == "Other")">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                    <a asp-action="Review" class="btn btn-secondary-custom w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Claims Table -->
+        @if (!Model.Any())
+        {
+            <div class="glass-panel p-5 text-center">
+                <i class="bi bi-search text-secondary" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 text-white">No Matching Claims</h4>
+                <p class="text-secondary">Try refining your search queries or filter categories.</p>
+            </div>
+        }
+        else
+        {
+            <div class="glass-panel p-4">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Customer</th>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td class="font-weight-bold text-white">#@claim.ClaimID</td>
+                                    <td>
+                                        <div class="text-white">@claim.SubmittedByFullName</div>
+                                    </td>
+                                    <td><code>@claim.LoanAccountNumber</code></td>
+                                    <td>@claim.ClaimType</td>
+                                    <td>@claim.DateSubmitted.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        @if (claim.StatusID == 1)
+                                        {
+                                            <span class="badge-status badge-pending"><i class="bi bi-clock-history"></i>Pending</span>
+                                        }
+                                        else if (claim.StatusID == 2)
+                                        {
+                                            <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i>Approved</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i>Rejected</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <button class="btn btn-secondary-custom btn-sm py-1 px-2" data-bs-toggle="collapse" data-bs-target="#review-desc-@claim.ClaimID">
+                                                <i class="bi bi-eye"></i> Details
+                                            </button>
+                                            @if (claim.StatusID == 1)
+                                            {
+                                                <button class="btn btn-success btn-sm py-1 px-2 border-0" 
+                                                        style="background-color: var(--success); font-weight: 500;"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#actionModal" 
+                                                        data-claimid="@claim.ClaimID" 
+                                                        data-statusid="2"
+                                                        data-actiontitle="Approve Claim">
+                                                    <i class="bi bi-check-lg"></i> Appr.
+                                                </button>
+                                                <button class="btn btn-danger btn-sm py-1 px-2 border-0" 
+                                                        style="background-color: var(--danger); font-weight: 500;"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#actionModal" 
+                                                        data-claimid="@claim.ClaimID" 
+                                                        data-statusid="3"
+                                                        data-actiontitle="Reject Claim">
+                                                    <i class="bi bi-x-lg"></i> Rej.
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Accordion detail panel -->
+                                <tr id="review-desc-@claim.ClaimID" class="collapse">
+                                    <td colspan="7" class="p-4" style="background-color: rgba(15, 23, 42, 0.25);">
+                                        <div class="row">
+                                            <div class="col-md-6 border-end border-secondary border-opacity-25">
+                                                <h6 class="text-secondary font-weight-bold"><i class="bi bi-chat-left-text me-2 text-gradient-blue"></i>Claim Description:</h6>
+                                                <p class="text-white ps-3 mb-0" style="white-space: pre-wrap;">@claim.Description</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-secondary font-weight-bold"><i class="bi bi-person-badge me-2 text-gradient-purple"></i>Review Status:</h6>
+                                                <div class="ps-3">
+                                                    @if (claim.StatusID == 1)
+                                                    {
+                                                        <span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i> Awaiting Loan Officer Action</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="mb-2">
+                                                            <strong class="text-secondary">Reviewed By:</strong> <span class="text-white">@claim.ReviewedByFullName</span>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <strong class="text-secondary">Review Date:</strong> <span class="text-white">@claim.ReviewDate?.ToString("yyyy-MM-dd HH:mm")</span>
+                                                        </div>
+                                                        <div>
+                                                            <strong class="text-secondary">Officer Remarks:</strong> 
+                                                            <p class="text-white mt-1 mb-0" style="white-space: pre-wrap;">@(string.IsNullOrEmpty(claim.OfficerComments) ? "No remarks provided." : claim.OfficerComments)</p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Approval/Rejection Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel text-white" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title" id="actionModalLabel">Process Claim</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" data-bs-target="#actionModal" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="claimId" id="modalClaimId" />
+                    <input type="hidden" name="statusId" id="modalStatusId" />
+                    
+                    <div class="mb-3">
+                        <label for="officerComments" class="form-label form-label-custom">Review Comments / Remarks (Optional)</label>
+                        <textarea class="form-control form-control-custom" id="officerComments" name="officerComments" rows="4" placeholder="Enter comments or reason for decision..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary-custom" id="modalSubmitBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var actionModal = document.getElementById('actionModal');
+            if (actionModal) {
+                actionModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var claimId = button.getAttribute('data-claimid');
+                    var statusId = button.getAttribute('data-statusid');
+                    var actionTitle = button.getAttribute('data-actiontitle');
+
+                    var modalTitle = actionModal.querySelector('.modal-title');
+                    var modalClaimIdInput = actionModal.querySelector('#modalClaimId');
+                    var modalStatusIdInput = actionModal.querySelector('#modalStatusId');
+                    var submitBtn = actionModal.querySelector('#modalSubmitBtn');
+
+                    modalTitle.textContent = actionTitle + ' #' + claimId;
+                    modalClaimIdInput.value = claimId;
+                    modalStatusIdInput.value = statusId;
+
+                    if (statusId == '2') {
+                        submitBtn.className = 'btn btn-success border-0 px-4';
+                        submitBtn.style.backgroundColor = 'var(--success)';
+                        submitBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Approve';
+                    } else {
+                        submitBtn.className = 'btn btn-danger border-0 px-4';
+                        submitBtn.style.backgroundColor = 'var(--danger)';
+                        submitBtn.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Reject';
+                    }
+                });
+            }
+        });
+    </script>
+}

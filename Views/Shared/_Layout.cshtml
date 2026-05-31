@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Claims Management</title>
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="no-print">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand navbar-brand-custom" asp-controller="Account" asp-action="Login">
+                    <i class="bi bi-shield-lock-fill me-2"></i>ClaimShield
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (User.IsInRole("Customer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-custom @(ViewContext.RouteData.Values["action"]?.ToString() == "List" ? "active" : "")" asp-controller="Claims" asp-action="List">
+                                        <i class="bi bi-folder-fill me-1"></i>My Claims
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-custom @(ViewContext.RouteData.Values["action"]?.ToString() == "Submit" ? "active" : "")" asp-controller="Claims" asp-action="Submit">
+                                        <i class="bi bi-file-earmark-plus-fill me-1"></i>Submit Claim
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("LoanOfficer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-custom @(ViewContext.RouteData.Values["action"]?.ToString() == "Review" ? "active" : "")" asp-controller="Claims" asp-action="Review">
+                                        <i class="bi bi-clipboard-check-fill me-1"></i>Review Claims
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-custom @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="Index">
+                                        <i class="bi bi-bar-chart-line-fill me-1"></i>Reports Dashboard
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                    
+                    <div class="d-flex align-items-center">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <span class="text-secondary me-3 d-none d-md-inline-block">
+                                <i class="bi bi-person-circle me-1"></i>
+                                Welcome, <strong>@User.FindFirst("FullName")?.Value</strong> 
+                                <span class="badge bg-secondary ms-1" style="font-size: 0.75rem;">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
+                            </span>
+                            <a class="btn btn-secondary-custom btn-sm" asp-controller="Account" asp-action="Logout">
+                                <i class="bi bi-box-arrow-right me-1"></i>Sign Out
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary-custom btn-sm" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="main-wrapper container">
+        <!-- Banner Message handling -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show glass-panel text-white border-success mb-4 no-print" role="alert" style="background-color: rgba(16, 185, 129, 0.15)">
+                <i class="bi bi-check-circle-fill me-2 text-success"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show glass-panel text-white border-danger mb-4 no-print" role="alert" style="background-color: rgba(239, 68, 68, 0.15)">
+                <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        
+        @RenderBody()
+    </main>
+
+    <footer class="footer-custom mt-auto no-print">
+        <div class="container text-center">
+            &copy; 2026 - ClaimShield Claims Management System - Loan Department
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

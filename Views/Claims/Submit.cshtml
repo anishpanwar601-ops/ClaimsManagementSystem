@@ -1,0 +1,67 @@
+@model ClaimViewModel
+@{
+    ViewData["Title"] = "Submit Loan Claim";
+}
+
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-8">
+        <div class="glass-panel p-5">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-file-earmark-plus-fill text-gradient-purple me-3" style="font-size: 2.5rem;"></i>
+                <div>
+                    <h2 class="mb-1">Submit Loan Claim</h2>
+                    <p class="text-secondary mb-0">File a new claim for your active loan accounts</p>
+                </div>
+            </div>
+
+            <form asp-action="Submit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size: 0.85rem;"></div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="LoanAccountNumber" class="form-label form-label-custom"></label>
+                        <input asp-for="LoanAccountNumber" class="form-control form-control-custom" placeholder="e.g. L-12345" />
+                        <span asp-validation-for="LoanAccountNumber" class="text-danger" style="font-size: 0.8rem;"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ClaimType" class="form-label form-label-custom"></label>
+                        <select asp-for="ClaimType" class="form-select form-control-custom">
+                            <option value="">-- Select Claim Type --</option>
+                            <option value="Insurance Claim">Insurance Claim</option>
+                            <option value="Interest Waiver Request">Interest Waiver Request</option>
+                            <option value="Dispute Charge">Dispute Charge</option>
+                            <option value="Credit Limit Dispute">Credit Limit Dispute</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="ClaimType" class="text-danger" style="font-size: 0.8rem;"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label form-label-custom">Submission Date</label>
+                    <input type="text" class="form-control form-control-custom" value="@DateTime.Now.ToString("yyyy-MM-dd (dfff)")" readonly style="opacity: 0.75; cursor: not-allowed;" />
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label form-label-custom"></label>
+                    <textarea asp-for="Description" rows="5" class="form-control form-control-custom" placeholder="Provide full details about the loan issue, payment references, and any other relevant context..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3">
+                    <a asp-action="List" class="btn btn-secondary-custom">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="bi bi-send-fill me-1"></i>Submit Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

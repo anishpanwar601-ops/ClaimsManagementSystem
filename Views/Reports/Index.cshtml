@@ -1,0 +1,191 @@
+@model ReportViewModel
+@{
+    ViewData["Title"] = "Claims Reports & Analytics";
+}
+
+<div class="row animate-fade-in">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1 text-gradient-purple">Reports & Analytics</h2>
+                <p class="text-secondary mb-0">Monitor department operations, audit claims metrics, and export data audits</p>
+            </div>
+            
+            <div class="d-flex gap-2 no-print">
+                <!-- Javascript trigger for printing to PDF -->
+                <button type="button" class="btn btn-secondary-custom" onclick="window.print()">
+                    <i class="bi bi-printer-fill me-1"></i>Print / Save to PDF
+                </button>
+                <a href="@Url.Action("ExportToCsv", new { statusId = Model.FilterStatusID, dateFrom = Model.FilterDateFrom, dateTo = Model.FilterDateTo, officerId = Model.FilterOfficerID })" class="btn btn-primary-custom">
+                    <i class="bi bi-file-earmark-excel-fill me-1"></i>Export to Excel (CSV)
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-panel p-4 metric-card">
+                    <h6 class="text-secondary text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Total Claims</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h2 text-white font-weight-bold mb-0">@Model.TotalClaimsCount</span>
+                        <div class="bg-primary bg-opacity-20 p-2 rounded" style="color: var(--primary);">
+                            <i class="bi bi-files" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel p-4 metric-card">
+                    <h6 class="text-secondary text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Pending Approval</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h2 text-warning font-weight-bold mb-0">@Model.PendingCount</span>
+                        <div class="bg-warning bg-opacity-20 p-2 rounded" style="color: var(--warning);">
+                            <i class="bi bi-clock-history" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel p-4 metric-card approved">
+                    <h6 class="text-secondary text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Claims Approved</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h2 text-success font-weight-bold mb-0">@Model.ApprovedCount</span>
+                        <div class="bg-success bg-opacity-20 p-2 rounded" style="color: var(--success);">
+                            <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-panel p-4 metric-card rejected">
+                    <h6 class="text-secondary text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Claims Rejected</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h2 text-danger font-weight-bold mb-0">@Model.RejectedCount</span>
+                        <div class="bg-danger bg-opacity-20 p-2 rounded" style="color: var(--danger);">
+                            <i class="bi bi-x-circle-fill" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="glass-panel p-4 mb-4 no-print">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label form-label-custom">Claim Status</label>
+                    <select asp-for="FilterStatusID" class="form-select form-control-custom">
+                        <option value="">All Statuses</option>
+                        @foreach (var status in Model.Statuses)
+                        {
+                            <option value="@status.StatusID">@status.StatusName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-custom">Loan Officer (Reviewer)</label>
+                    <select asp-for="FilterOfficerID" class="form-select form-control-custom">
+                        <option value="">All Officers</option>
+                        @foreach (var officer in Model.Officers)
+                        {
+                            <option value="@officer.UserID">@officer.FullName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-custom">Date From</label>
+                    <input type="date" asp-for="FilterDateFrom" class="form-control form-control-custom" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-custom">Date To</label>
+                    <input type="date" asp-for="FilterDateTo" class="form-control form-control-custom" />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        <i class="bi bi-filter me-1"></i>Filter
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary-custom w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Claims Report Results -->
+        <div class="glass-panel p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 font-weight-bold">Claims Logs</h5>
+                <span class="text-secondary" style="font-size: 0.85rem;">Showing <strong>@Model.MatchingClaims.Count</strong> records</span>
+            </div>
+            
+            @if (!Model.MatchingClaims.Any())
+            {
+                <div class="p-5 text-center">
+                    <i class="bi bi-file-earmark-bar-graph text-secondary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-white">No Records Found</h5>
+                    <p class="text-secondary mb-0">No claims match the selected reporting filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Submitted By</th>
+                                <th>Date Submitted</th>
+                                <th>Status</th>
+                                <th>Reviewed By</th>
+                                <th>Review Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model.MatchingClaims)
+                            {
+                                <tr>
+                                    <td class="font-weight-bold text-white">#@claim.ClaimID</td>
+                                    <td><code>@claim.LoanAccountNumber</code></td>
+                                    <td>@claim.ClaimType</td>
+                                    <td>@claim.SubmittedByFullName</td>
+                                    <td>@claim.DateSubmitted.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        @if (claim.StatusID == 1)
+                                        {
+                                            <span class="badge-status badge-pending"><i class="bi bi-clock-history"></i>Pending</span>
+                                        }
+                                        else if (claim.StatusID == 2)
+                                        {
+                                            <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i>Approved</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i>Rejected</span>
+                                        }
+                                    </td>
+                                    <td>@(claim.ReviewedByFullName ?? "N/A")</td>
+                                    <td>@(claim.ReviewDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</td>
+                                </tr>
+                                <tr class="no-print">
+                                    <td colspan="8" class="pt-0 pb-3" style="background-color: transparent;">
+                                        <div class="ps-4 text-secondary" style="font-size: 0.85rem;">
+                                            <span class="text-white opacity-50">Description:</span> @claim.Description
+                                            @if (!string.IsNullOrEmpty(claim.OfficerComments))
+                                            {
+                                                <br />
+                                                <span class="text-success opacity-75">Remarks:</span> @claim.OfficerComments
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
