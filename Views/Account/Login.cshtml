@@ -1,0 +1,77 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="row justify-content-center align-items-center mt-5 animate-fade-in">
+    <div class="col-md-5">
+        <div class="glass-panel p-5">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-lock text-gradient-purple" style="font-size: 3.5rem;"></i>
+                <h2 class="mt-3 font-weight-bold">Welcome Back</h2>
+                <p class="text-secondary">ClaimShield Claims Management System</p>
+            </div>
+
+            <form asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size: 0.85rem;"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Username" class="form-label form-label-custom"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-secondary border-end-0 text-secondary">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                        <input asp-for="Username" class="form-control form-control-custom ps-3 border-start-0" placeholder="Enter username" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="Username" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label form-label-custom"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-secondary border-end-0 text-secondary">
+                            <i class="bi bi-key-fill"></i>
+                        </span>
+                        <input asp-for="Password" class="form-control form-control-custom ps-3 border-start-0" placeholder="Enter password" autocomplete="current-password" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input asp-for="RememberMe" class="form-check-input" style="background-color: rgba(15,23,42,0.6); border-color: rgba(255,255,255,0.1);" />
+                    <label asp-for="RememberMe" class="form-check-label text-secondary" style="font-size: 0.9rem;"></label>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-3 mt-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+        </div>
+
+        <!-- Testing Credentials Helper Box -->
+        <div class="glass-panel p-4 mt-4" style="background: rgba(30, 41, 59, 0.25);">
+            <h6 class="text-secondary mb-3"><i class="bi bi-info-circle-fill text-gradient-blue me-2"></i>Testing Credentials Helper Box:</h6>
+            <div class="row text-start" style="font-size: 0.82rem;">
+                <div class="col-6 mb-2">
+                    <div class="text-white font-weight-bold">Customer:</div>
+                    <div class="text-secondary">User: <code>Vivek</code></div>
+                    <div class="text-secondary">Pass: <code>Vivek@123</code></div>
+                </div>
+                <div class="col-6 mb-2">
+                    <div class="text-white font-weight-bold">Loan Officer:</div>
+                    <div class="text-secondary">User: <code>Samarth</code></div>
+                    <div class="text-secondary">Pass: <code>Samarth@123</code></div>
+                </div>
+                <div class="col-6">
+                    <div class="text-white font-weight-bold">Administrator:</div>
+                    <div class="text-secondary">User: <code>Anish</code></div>
+                    <div class="text-secondary">Pass: <code>Anish@123</code></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
